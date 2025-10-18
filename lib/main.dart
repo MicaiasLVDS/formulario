@@ -18,12 +18,67 @@ class _FormularioState extends State<Formulario> {
   final controladoraEmail = TextEditingController();
   final controladoraSenha = TextEditingController();
   final idade = TextEditingController();
+  String _genero = "outro";
+  bool _termos = false;
+
+  void enviar() {
+    final bool valido = _formkey.currentState?.validate() ?? false;
+    if (!valido) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Não foi possivel enviar, preencha o formulário.'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+
+      return;
+    }
+
+    if (!_termos) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Aceite os Termos'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+
+      return;
+    }
+
+    showDialog(
+      context: context,
+      useSafeArea: true,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Title'),
+          content: Column(
+            children: [
+              Text(controladoraNome.text),
+              Text(controladoraEmail.text),
+              Text(controladoraSenha.text),
+              Text(idade.text),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Fechar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   bool mostrarSenha = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Center(child: Text('Primeiro Formulario'))),
+      appBar: AppBar(title: Center(child: Text('Primeiro Acesso'))),
       body: Form(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -110,6 +165,52 @@ class _FormularioState extends State<Formulario> {
                   }
                   return null;
                 },
+              ),
+              SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _genero,
+                decoration: const InputDecoration(
+                  labelText: 'Escolha Seu Genero',
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  DropdownMenuItem(
+                    value: "masculino",
+                    child: Text("Masculino"),
+                  ),
+                  DropdownMenuItem(value: "feminino", child: Text("Feminino")),
+                  DropdownMenuItem(value: "outro", child: Text("Outro")),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _genero = value ?? 'outro';
+                  });
+                },
+              ),
+              SizedBox(height: 16),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                title: Text("Aceita os Termos"),
+                subtitle: _termos
+                    ? null
+                    : Text(
+                        'Aceite os termos para continuar',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                value: _termos,
+                onChanged: (v) {
+                  setState(() {
+                    _termos = v ?? false;
+                  });
+                },
+              ),
+              SizedBox(height: 16),
+              ElevatedButton.icon(
+                iconAlignment: IconAlignment.end,
+                onPressed: enviar,
+                label: Text('Cadastrar'),
+                icon: Icon(Icons.send),
               ),
             ],
           ),
